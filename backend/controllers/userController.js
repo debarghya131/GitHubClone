@@ -5,16 +5,17 @@ const dotenv = require("dotenv");
 var ObjectId = require("mongodb").ObjectId;
 
 dotenv.config();
-const uri = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI || process.env.MONGODB_URL;
+const jwtSecret =
+  process.env.JWT_SECRET_KEY ||
+  process.env.JWT_SECRET ||
+  "github-clone-local-dev-secret";
 
 let client;
 
 async function connectClient() {
   if (!client) {
-    client = new MongoClient(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    client = new MongoClient(uri);
     await client.connect();
   }
 }
@@ -22,13 +23,24 @@ async function connectClient() {
 async function signup(req, res) {
   const { username, password, email } = req.body;
   try {
+    if (!username || !password || !email) {
+      return res.status(400).json({ message: "All fields are required!" });
+    }
+
     await connectClient();
     const db = client.db("githubclone");
     const usersCollection = db.collection("users");
 
-    const user = await usersCollection.findOne({ username });
+    const user = await usersCollection.findOne({
+      $or: [{ username }, { email }],
+    });
     if (user) {
-      return res.status(400).json({ message: "User already exists!" });
+      return res.status(400).json({
+        message:
+          user.username === username
+            ? "Username already exists!"
+            : "Email already exists!",
+      });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -45,21 +57,26 @@ async function signup(req, res) {
 
     const result = await usersCollection.insertOne(newUser);
 
-    const token = jwt.sign(
-      { id: result.insertId },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: "1h" }
-    );
-    res.json({ token, userId: result.insertId });
+    const token = jwt.sign({ id: result.insertedId }, jwtSecret, {
+      expiresIn: "1h",
+    });
+    res.json({ token, userId: result.insertedId });
   } catch (err) {
     console.error("Error during signup : ", err.message);
-    res.status(500).send("Server error");
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "User already exists!" });
+    }
+    res.status(500).json({ message: "Server error" });
   }
 }
 
 async function login(req, res) {
   const { email, password } = req.body;
   try {
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password required!" });
+    }
+
     await connectClient();
     const db = client.db("githubclone");
     const usersCollection = db.collection("users");
@@ -74,7 +91,7 @@ async function login(req, res) {
       return res.status(400).json({ message: "Invalid credentials!" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
+    const token = jwt.sign({ id: user._id }, jwtSecret, {
       expiresIn: "1h",
     });
     res.json({ token, userId: user._id });
@@ -137,18 +154,18 @@ async function updateUserProfile(req, res) {
       updateFields.password = hashedPassword;
     }
 
-    const result = await usersCollection.findOneAndUpdate(
+    const updatedUser = await usersCollection.findOneAndUpdate(
       {
         _id: new ObjectId(currentID),
       },
       { $set: updateFields },
       { returnDocument: "after" }
     );
-    if (!result.value) {
+    if (!updatedUser) {
       return res.status(404).json({ message: "User not found!" });
     }
 
-    res.send(result.value);
+    res.send(updatedUser);
   } catch (err) {
     console.error("Error during updating : ", err.message);
     res.status(500).send("Server error!");
@@ -167,7 +184,7 @@ async function deleteUserProfile(req, res) {
       _id: new ObjectId(currentID),
     });
 
-    if (result.deleteCount == 0) {
+    if (result.deletedCount === 0) {
       return res.status(404).json({ message: "User not found!" });
     }
 

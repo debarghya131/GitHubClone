@@ -1,11 +1,17 @@
-import { Suspense, lazy, useEffect } from "react";
-import { useNavigate, useRoutes } from "react-router-dom";
+import React, { Suspense, lazy, useEffect } from "react";
+import { Navigate, useNavigate, useRoutes } from "react-router-dom";
 
 // Pages List
 const Dashboard = lazy(() => import("./components/dashboard/Dashboard"));
 const Profile = lazy(() => import("./components/user/Profile"));
 const Login = lazy(() => import("./components/auth/Login"));
 const Signup = lazy(() => import("./components/auth/Signup"));
+const CreateRepository = lazy(() =>
+  import("./components/repo/CreateRepository")
+);
+const RepositoryDetails = lazy(() =>
+  import("./components/repo/RepositoryDetails")
+);
 
 // Auth Context
 import { useAuth } from "./useAuth";
@@ -49,6 +55,18 @@ const ProjectRoutes = () => {
     {
       path: "/profile",
       element: <Profile />,
+    },
+    {
+      path: "/create",
+      element: <CreateRepository />,
+    },
+    {
+      path: "/repo/:id",
+      element: <RepositoryDetails />,
+    },
+    {
+      path: "*",
+      element: <Navigate replace to={currentUser ? "/" : "/auth"} />,
     },
   ]);
 

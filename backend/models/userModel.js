@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const UserSchema = new Schema({
-  timestamps: true,
+const UserSchema = new Schema(
+  {
   username: {
     type: String,
     required: true,
@@ -37,7 +37,9 @@ const UserSchema = new Schema({
       ref: "Repository",
     },
   ],
-});
+  },
+  { timestamps: true }
+);
 
 const User = mongoose.model("User", UserSchema);
 

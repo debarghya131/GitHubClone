@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../useAuth";
 
@@ -8,6 +8,7 @@ import "./auth.css";
 
 import logo from "../../assets/github-mark-white.svg";
 import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../../config/api";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -22,7 +23,7 @@ const Signup = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:3002/signup", {
+      const res = await axios.post(`${API_BASE_URL}/signup`, {
         email: email,
         password: password,
         username: username,
@@ -37,7 +38,7 @@ const Signup = () => {
       window.location.href = "/";
     } catch (err) {
       console.error(err);
-      alert("Signup Failed!");
+      alert(err.response?.data?.message || "Signup Failed!");
       setLoading(false);
     }
   };

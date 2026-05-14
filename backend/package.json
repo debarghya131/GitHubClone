@@ -4,24 +4,22 @@
   "description": "Git Clone",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js start"
+    "start": "node index.js start",
+    "dev": "node --watch index.js start"
   },
   "keywords": [],
   "author": "Apna College",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.1657.0",
+    "@aws-sdk/client-s3": "^3.922.0",
     "bcryptjs": "^2.4.3",
-    "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "http": "^0.0.1-security",
-    "jsonwebtoken": "^9.0.2",
+    "express": "^4.22.2",
+    "jsonwebtoken": "^9.0.3",
     "mongodb": "^6.8.0",
-    "mongoose": "^8.5.0",
-    "socket-io": "^1.0.0",
-    "socket.io": "^4.7.5",
+    "mongoose": "^8.22.1",
+    "socket.io": "^4.8.3",
     "uuid": "^10.0.0",
     "yargs": "^17.7.2"
   }

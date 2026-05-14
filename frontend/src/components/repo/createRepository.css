@@ -1,0 +1,88 @@
+.create-repo-page {
+  width: min(760px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 36px 0 56px;
+  color: #f1f6fd;
+}
+
+.create-repo-form {
+  display: grid;
+  gap: 14px;
+}
+
+.create-repo-form h1 {
+  margin: 0 0 12px;
+  font-size: 28px;
+  letter-spacing: 0;
+}
+
+.create-repo-form label,
+.create-repo-form legend {
+  color: #f1f6fd;
+  font-weight: 700;
+}
+
+.create-repo-form input[type="text"],
+.create-repo-form textarea {
+  width: 100%;
+  border: 1px solid #3d444d;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background-color: #0d1117;
+  color: #f1f6fd;
+  font: inherit;
+}
+
+.create-repo-form textarea {
+  resize: vertical;
+}
+
+.create-repo-form input[type="text"]:focus,
+.create-repo-form textarea:focus {
+  border-color: #2f81f7;
+  outline: 2px solid rgba(47, 129, 247, 0.3);
+}
+
+.create-repo-form fieldset {
+  display: grid;
+  gap: 10px;
+  margin: 8px 0 0;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #c9d1d9;
+  font-weight: 400;
+}
+
+.create-repo-form button {
+  width: fit-content;
+  border-radius: 6px;
+  padding: 10px 16px;
+  background-color: #238636;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.create-repo-form button:hover:not(:disabled) {
+  background-color: #2ea043;
+}
+
+.create-repo-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-error {
+  margin: 0;
+  border: 1px solid #f85149;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background-color: rgba(248, 81, 73, 0.12);
+  color: #ffb3ad;
+}

@@ -2,7 +2,6 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
 const http = require("http");
 const { Server } = require("socket.io");
 const mainRouter = require("./routes/main.router");
@@ -68,54 +67,47 @@ yargs(hideBin(process.argv))
 
 function startServer() {
   const app = express();
-  const port = process.env.PORT || 3000;
-
-  app.use(bodyParser.json());
-  app.use(express.json());
+  const port = process.env.PORT || 3002;
 
   const mongoURI = process.env.MONGODB_URI || process.env.MONGODB_URL;
-  const allowedOrigins = (process.env.ALLOWED_ORIGINS || "*")
+  const allowedOrigins = (
+    process.env.ALLOWED_ORIGINS || "http://localhost:5173,http://127.0.0.1:5173"
+  )
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
+  const corsOptions = {
+    origin: allowedOrigins.includes("*") ? "*" : allowedOrigins,
+  };
+
+  app.use(cors(corsOptions));
+  app.options("*", cors(corsOptions));
+  app.use(express.json());
+
+  if (!mongoURI) {
+    console.error("MONGODB_URI or MONGODB_URL is required.");
+    process.exit(1);
+  }
 
   mongoose
     .connect(mongoURI)
     .then(() => console.log("MongoDB connected!"))
     .catch((err) => console.error("Unable to connect : ", err));
 
-  app.use(
-    cors({
-      origin: allowedOrigins.includes("*") ? "*" : allowedOrigins,
-    })
-  );
-
   app.use("/", mainRouter);
 
-  let user = "test";
   const httpServer = http.createServer(app);
   const io = new Server(httpServer, {
     cors: {
-      origin: allowedOrigins.includes("*") ? "*" : allowedOrigins,
+      origin: corsOptions.origin,
       methods: ["GET", "POST"],
     },
   });
 
   io.on("connection", (socket) => {
     socket.on("joinRoom", (userID) => {
-      user = userID;
-      console.log("=====");
-      console.log(user);
-      console.log("=====");
       socket.join(userID);
     });
-  });
-
-  const db = mongoose.connection;
-
-  db.once("open", async () => {
-    console.log("CRUD operations called");
-    // CRUD operations
   });
 
   httpServer.listen(port, () => {

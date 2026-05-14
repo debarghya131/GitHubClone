@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import HeatMap from "@uiw/react-heat-map";
 
-// Function to generate random activity
 const generateActivityData = (startDate, endDate) => {
   const data = [];
   let currentDate = new Date(startDate);
@@ -10,7 +9,7 @@ const generateActivityData = (startDate, endDate) => {
   while (currentDate <= end) {
     const count = Math.floor(Math.random() * 50);
     data.push({
-      date: currentDate.toISOString().split("T")[0], //YYY-MM-DD
+      date: currentDate.toISOString().split("T")[0],
       count: count,
     });
     currentDate.setDate(currentDate.getDate() + 1);
@@ -48,11 +47,11 @@ const HeatMapProfile = () => {
   }, []);
 
   return (
-    <div>
+    <div className="heat-map-card">
       <h4>Recent Contributions</h4>
       <HeatMap
         className="HeatMapProfile"
-        style={{ maxWidth: "700px", height: "200px", color: "white" }}
+        style={{ maxWidth: "100%", height: "200px", color: "#f1f6fd" }}
         value={activityData}
         weekLabels={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]}
         startDate={new Date("2001-01-01")}

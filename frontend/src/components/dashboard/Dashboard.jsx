@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import "./dashboard.css";
 import Navbar from "../Navbar";
+import { API_BASE_URL } from "../../config/api";
 
 const Dashboard = () => {
   const [repositories, setRepositories] = useState([]);
@@ -12,24 +14,39 @@ const Dashboard = () => {
     const userId = localStorage.getItem("userId");
 
     const fetchRepositories = async () => {
+      if (!userId) {
+        setRepositories([]);
+        return;
+      }
+
       try {
-        const response = await fetch(
-          `http://localhost:3002/repo/user/${userId}`
-        );
+        const response = await fetch(`${API_BASE_URL}/repo/user/${userId}`);
         const data = await response.json();
-        setRepositories(data.repositories);
+
+        if (!response.ok) {
+          throw new Error(data.error || "Unable to fetch repositories");
+        }
+
+        setRepositories(Array.isArray(data.repositories) ? data.repositories : []);
       } catch (err) {
-        console.error("Error while fecthing repositories: ", err);
+        console.error("Error while fetching repositories: ", err);
+        setRepositories([]);
       }
     };
 
     const fetchSuggestedRepositories = async () => {
       try {
-        const response = await fetch(`http://localhost:3002/repo/all`);
+        const response = await fetch(`${API_BASE_URL}/repo/all`);
         const data = await response.json();
-        setSuggestedRepositories(data);
+
+        if (!response.ok) {
+          throw new Error(data.error || "Unable to fetch suggested repositories");
+        }
+
+        setSuggestedRepositories(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Error while fecthing repositories: ", err);
+        console.error("Error while fetching suggested repositories: ", err);
+        setSuggestedRepositories([]);
       }
     };
 
@@ -39,7 +56,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (searchQuery === "") {
-      setSearchResults(repositories);
+      setSearchResults(Array.isArray(repositories) ? repositories : []);
     } else {
       const filteredRepo = repositories.filter((repo) =>
         repo.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -52,18 +69,24 @@ const Dashboard = () => {
     <>
       <Navbar />
       <section id="dashboard">
-        <aside>
+        <aside className="dashboard-panel">
           <h3>Suggested Repositories</h3>
-          {suggestedRepositories.map((repo) => {
-            return (
-              <div key={repo._id}>
-                <h4>{repo.name}</h4>
-                <h4>{repo.description}</h4>
-              </div>
-            );
-          })}
+          {suggestedRepositories.length === 0 ? (
+            <p className="empty-state">No public repositories yet.</p>
+          ) : (
+            suggestedRepositories.map((repo) => {
+              return (
+                <article className="repo-card" key={repo._id}>
+                  <Link className="repo-card-link" to={`/repo/${repo._id}`}>
+                    <h4>{repo.name}</h4>
+                  </Link>
+                  <p>{repo.description || "No description provided."}</p>
+                </article>
+              );
+            })
+          )}
         </aside>
-        <main>
+        <main className="dashboard-main">
           <h2>Your Repositories</h2>
           <div id="search">
             <input
@@ -73,16 +96,28 @@ const Dashboard = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          {searchResults.map((repo) => {
-            return (
-              <div key={repo._id}>
-                <h4>{repo.name}</h4>
-                <h4>{repo.description}</h4>
-              </div>
-            );
-          })}
+          <div className="repo-list">
+            {searchResults.length === 0 ? (
+              <p className="empty-state">
+                {searchQuery
+                  ? "No repositories match your search."
+                  : "You do not have any repositories yet."}
+              </p>
+            ) : (
+              searchResults.map((repo) => {
+                return (
+                  <article className="repo-card" key={repo._id}>
+                    <Link className="repo-card-link" to={`/repo/${repo._id}`}>
+                      <h4>{repo.name}</h4>
+                    </Link>
+                    <p>{repo.description || "No description provided."}</p>
+                  </article>
+                );
+              })
+            )}
+          </div>
         </main>
-        <aside>
+        <aside className="dashboard-panel">
           <h3>Upcoming Events</h3>
           <ul>
             <li>

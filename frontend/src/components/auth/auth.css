@@ -122,6 +122,14 @@
     align-items: center;
     flex-direction: column;
   }
+
+  .pass-box a {
+    color: #2f81f7;
+  }
+
+  .pass-box a:hover {
+    text-decoration: underline;
+  }
   
   .signup-button {
     width: 250px;
